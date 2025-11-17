@@ -4,10 +4,10 @@ import matplotlib.pyplot as plt
 
 def obter_dados_item():
   # Obtem dados do produto
-  codigo = input("Código do item: ").strip()
+  codigo = input("\nCódigo do item: ").strip()
   descricao = input("Descrição do Item: ").strip()
   while True:
-    escolha = input("Categoria: Digite 1 para Matéria-Prima ou 2 para Produto acabado:")
+    escolha = input("\nCategoria: Digite 1 para Matéria-Prima ou 2 para Produto acabado:")
     if escolha == "1":
       categoria = "Matéria-Prima"
       break
@@ -15,22 +15,22 @@ def obter_dados_item():
       categoria = "Produto Acabado"
       break
     else:
-      print("Entrada inválida. Digite 1 ou 2.")
-  unidade = input("Unidade (ex: kg, L, un): ").strip()
-  quantidade = int(input("Quantidade inicial do produto: "))
-  preco = input("Preço unitário do produto: ")
+      print("\nEntrada inválida. Digite 1 ou 2.")
+  unidade = input("\nUnidade (ex: kg, L, un): ").strip()
+  quantidade = int(input("\nQuantidade inicial do produto: "))
+  preco = input("\nPreço unitário do produto: ")
   return {"Código": codigo,  "Item": descricao, "Categoria": categoria, "Unidade": unidade, "Quantidade": quantidade, "Preço": preco}
 
 def excluir_produto(estoque_lista):
   # Exclui um produto
-  id_excluir = input("Digite o Código do produto que você deseja excluir: ").strip()
+  id_excluir = input("\nDigite o Código do produto que você deseja excluir: ").strip()
   for produto in estoque_lista:
     if produto['Código'] == id_excluir:
       estoque_lista.remove(produto)
       print(f"'{produto['Item']}' excluído!")
       return
   else:
-    print("Produto não encontrado.")
+    print("\nProduto não encontrado.")
 
 def adicionar_ao_estoque(estoque_lista, produto):
 # Adiciona um produto
@@ -51,29 +51,29 @@ def mostrar_pilha(estoque_lista):
 
 def movimentar_produto(estoque_lista):
   # Lança/Baixa de produtos
-    id_mov = input("Digite o Código do produto que você deseja movimentar: ").strip()
+    id_mov = input("\nDigite o Código do produto que você deseja movimentar: ").strip()
     encontrado = False
     for produto in estoque_lista:
       if produto['Código'] == id_mov:
         encontrado = True
-        print(f"Produto encontrado: {produto['Item']} (Estoque atual: {produto['Quantidade']})")
+        print(f"\nProduto encontrado: {produto['Item']} (Estoque atual: {produto['Quantidade']})")
         tipo = input("\nDigite '1' para entrada ou '2' para saída: ")
         if tipo == "1":
           quantidade_mov = int(input("Digite a quantidade a ser adicionada: "))
           produto['Quantidade'] += quantidade_mov
-          print(f"Unidades adicionadas ao estoque. Novo estoque: {produto['Quantidade']}")
+          print(f"\nUnidades adicionadas ao estoque. Novo estoque: {produto['Quantidade']}")
         elif tipo == "2":
-          quantidade_mov = int(input("Digite a quantidade a ser retirada: "))
+          quantidade_mov = int(input("\nDigite a quantidade a ser retirada: "))
           if produto['Quantidade'] >= quantidade_mov:
             produto['Quantidade'] -= quantidade_mov
             print(f"Unidades retiradas do estoque. Novo estoque: {produto['Quantidade']}")
           else:
-            print("Quantidade insuficiente em estoque.")
+            print("\nQuantidade insuficiente em estoque.")
         else:
-          print("Opção inválida.")
+          print("\nOpção inválida.")
         break
     if not encontrado:
-      print("Produto não encontrado.")
+      print("\nProduto não encontrado.")
 
 def exibir_tabela_estoque(estoque_lista):
   # Para exibir a tabela (normal)
@@ -90,7 +90,7 @@ def exibir_tabela_estoque(estoque_lista):
 def exportar_banco(estoque_lista):
   #Para exportar o banco de dados
   if not estoque_lista:
-    print("Nenhum item cadastrado. Nada a exportar")
+    print("\nNenhum item cadastrado. Nada a exportar")
     return
 
   # Minimenu para exportação
@@ -99,7 +99,7 @@ def exportar_banco(estoque_lista):
   print("2. Exportar para CSV")
   print("3. Voltar ao menu principal")
 
-  escolha = input("Digite o número da opção desejada: ").strip()
+  escolha = input("\nDigite o número da opção desejada: ").strip()
 
   df = pd.DataFrame(estoque_lista)
   if escolha == "1":
@@ -125,7 +125,7 @@ def relatorios_gerenciais(estoque_lista):
     print("4. Estoque de Segurança (simples)")
     print("5. Voltar ao menu principal")
 
-    op = input("Escolha uma opção: ")
+    op = input("\nEscolha uma opção: ")
 
 
     if op == "1":
@@ -212,7 +212,7 @@ def graficos_estoque(estoque_lista):
     print("3. Custo de estoque (Curva ABC)")
     print("4. Voltar ao menu principal")
 
-    op = input("Escolha uma opção: ").strip()
+    op = input("\nEscolha uma opção: ").strip()
 
     df = pd.DataFrame(estoque_lista)
     df["Preço"] =pd.to_numeric(df["Preço"], errors="coerce")
@@ -239,22 +239,61 @@ def graficos_estoque(estoque_lista):
       plt.ylabel("Quantidade Total")
       plt.show()
 
-    #Curva ABC
+    # Curva ABC
     elif op == "3":
-      df_abc = df[["Item", "Custo Total"]].sort_values(by="Custo Total", ascending=False)
+      df["Preço"] = df["Preço"].astype(str).str.replace(",", ".", regex=False)
+      df["Preço"] = pd.to_numeric(df["Preço"], errors="coerce")
 
-      df_abc["% Acumulado"] = (df_abc["Custo Total"].cumsum() / df_abc["Custo Total"].sum()) * 100
-      plt.figure()
-      plt.bar(df_abc["Item"], df_abc["% Acumulado"])
-      plt.title("Curva ABC - Custos de Estoque")
-      plt.xlabel("Produto")
-      plt.ylabel("Custo Acumulado (%)")
-      plt.xticks(rotation=45)
+      df["Custo Total"] = df["Preço"] * df["Quantidade"] #para calcular
+
+      df_abc = df.sort_values(by="Custo Total", ascending=False).reset_index(drop=True)  #decrescente
+
+      # Criar percentuais acumulados
+      df_abc["% Valor Acumulado"] = (df_abc["Custo Total"].cumsum() / df_abc["Custo Total"].sum()) * 100
+      df_abc["% Itens Acumulado"] = (df_abc.index + 1) / len(df_abc) * 100
+
+      # Limites para as classes - ABC
+      limite_A = 80
+      limite_B = 95  # 80% + 15%
+
+      # Início
+      plt.figure(figsize=(10, 6))
+
+      plt.plot(
+          df_abc["% Itens Acumulado"],
+          df_abc["% Valor Acumulado"],
+          marker="o",
+          linestyle="-",
+      )
+
+      # Linha A
+      plt.axhline(y=limite_A, linestyle="--", color="red")
+      # Linha B
+      plt.axhline(y=limite_B, linestyle="--", color="green")
+
+      # 80% acumulado
+      plt.axvline(
+          x=df_abc["% Itens Acumulado"][df_abc["% Valor Acumulado"] <= limite_A].max(),
+          linestyle="--",
+          color="red",
+      )
+
+      # 95% acumulado
+      plt.axvline(
+          x=df_abc["% Itens Acumulado"][df_abc["% Valor Acumulado"] <= limite_B].max(),
+          linestyle="--",
+          color="green",
+      )
+
+      plt.title("Curva ABC - Classificação de Estoque")
+      plt.xlabel("Percentual Acumulado de Itens (%)")
+      plt.ylabel("Percentual Acumulado de Valor (%)")
+      plt.grid(True, linestyle=":", alpha=0.6)
       plt.tight_layout()
       plt.show()
 
     elif op == "4":
-      print("Voltando ao menu principal...")
+      print("\nVoltando ao menu principal...")
       break
     else:
       print("Opção inválida.")
@@ -304,6 +343,7 @@ while True:
 
     elif opcao == "7":
       graficos_estoque(estoque)
+
 
 
     elif opcao == "8":
